@@ -1,5 +1,6 @@
 <script>
 import { defineComponent } from "vue";
+import { clearInterval, setInterval } from "worker-timers";
 
 export default defineComponent({
   data() {
@@ -26,6 +27,16 @@ export default defineComponent({
   },
   methods: {
     startTimer() {
+      function beep(freq) {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        let osc = ctx.createOscillator();
+        osc.connect(ctx.destination);
+        osc.frequency.value = freq;
+        osc.type = "sine";
+        osc.start();
+        osc.stop(ctx.currentTime + 0.4);
+      }
+      beep(800);
       console.log("Старт таймера");
       if (this.nowTime == null) {
         this.nowTime = this.times * 2 - 1;
@@ -76,15 +87,21 @@ export default defineComponent({
 
                 this.isfreeTime = !this.isfreeTime;
                 console.log("Старт следующего цикла");
+                beep(800);
                 this.startTimer();
               } else if (this.nowTime == 0) {
+                beep(800);
                 this.nowTime = null;
+                this.runMin = null;
+                this.runSec = null;
+                this.isfreeTime = !this.isfreeTime;
               }
               clearInterval(time);
             }
           }
         }, 1000);
       }
+      beep(800);
     },
     pause() {
       this.isPause = !this.isPause;
@@ -94,8 +111,6 @@ export default defineComponent({
 </script>
 
 <template>
-  <input v-model="minutes" type="number" /> :
-  <input v-model="seconds" type="number" />
   <button @click="startTimer">start</button>
 
   <div class="timer">
@@ -113,12 +128,6 @@ export default defineComponent({
 </template>
 
 <style scoped lang="sass">
-input
-  width: 50px
-  margin-bottom: 50px
-  margin-left: 10px
-  font-size: 20px
-
 .timer
   font-size: 22px
 
