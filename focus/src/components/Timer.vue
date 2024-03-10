@@ -108,6 +108,7 @@ export default defineComponent({
                   this.isfreeTime = !this.isfreeTime;
                   console.log("Старт следующего цикла");
                   beep(800);
+                  clearInterval(time);
                   this.startTimer();
                 } else if (this.nowTime == 0) {
                   beep(800);
@@ -134,7 +135,7 @@ export default defineComponent({
       if (this.allSec != 59) {
         this.allSec += 1;
       } else {
-        this.allSec == 0;
+        this.allSec = 0;
         this.allMin += 1;
       }
     },
