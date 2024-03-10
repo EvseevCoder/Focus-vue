@@ -12,6 +12,9 @@ export default defineComponent({
       isPause: false,
       nowTime: null,
       isfreeTime: false,
+      isSbros: false,
+      allMin: 0,
+      allSec: 0,
     };
   },
   props: {
@@ -74,29 +77,47 @@ export default defineComponent({
             console.log("Сброс таймера в случае бага");
           }
 
-          if (this.isPause == false) {
-            if (this.runSec != 0) {
-              this.runSec -= 1;
-            } else if (this.runSec == 0 && this.runMin > 0) {
-              this.runMin -= 1;
-              this.runSec = 59;
-            } else if (this.runSec == 0 && this.runMin == 0) {
-              if (this.nowTime != 0) {
-                this.nowTime -= 1;
-                this.runMin = null;
+          // Функция для сброса
+          if (this.isSbros) {
+            console.log(1);
+            clearInterval(time);
+            this.nowTime = null;
+            this.runMin = null;
+            this.runSec = null;
+            this.isfreeTime = false;
 
-                this.isfreeTime = !this.isfreeTime;
-                console.log("Старт следующего цикла");
-                beep(800);
-                this.startTimer();
-              } else if (this.nowTime == 0) {
-                beep(800);
-                this.nowTime = null;
-                this.runMin = null;
-                this.runSec = null;
-                this.isfreeTime = !this.isfreeTime;
+            this.isSbros = false;
+          } else {
+            if (this.isPause == false) {
+              if (this.runSec != 0) {
+                this.runSec -= 1;
+
+                if (!this.isfreeTime) {
+                  this.updateTime();
+                }
+              } else if (this.runSec == 0 && this.runMin > 0) {
+                this.runMin -= 1;
+                this.runSec = 59;
+                if (!this.isfreeTime) {
+                  this.updateTime();
+                }
+              } else if (this.runSec == 0 && this.runMin == 0) {
+                if (this.nowTime != 0) {
+                  this.nowTime -= 1;
+                  this.runMin = null;
+                  this.isfreeTime = !this.isfreeTime;
+                  console.log("Старт следующего цикла");
+                  beep(800);
+                  this.startTimer();
+                } else if (this.nowTime == 0) {
+                  beep(800);
+                  this.nowTime = null;
+                  this.runMin = null;
+                  this.runSec = null;
+                  this.isfreeTime = !this.isfreeTime;
+                }
+                clearInterval(time);
               }
-              clearInterval(time);
             }
           }
         }, 1000);
@@ -105,6 +126,17 @@ export default defineComponent({
     },
     pause() {
       this.isPause = !this.isPause;
+    },
+    sbros() {
+      this.isSbros = !this.isSbros;
+    },
+    updateTime() {
+      if (this.allSec != 59) {
+        this.allSec += 1;
+      } else {
+        this.allSec == 0;
+        this.allMin += 1;
+      }
     },
   },
 });
@@ -123,8 +155,11 @@ export default defineComponent({
     </p>
   </div>
   <button @click="pause">Пауза</button>
+  <button @click="sbros">Сброс</button>
 
   <div :class="isfreeTime ? 'free' : 'work'" class="block"></div>
+
+  <h2>Потрачено времени: {{ allMin }} : {{ allSec }}</h2>
 </template>
 
 <style scoped lang="sass">
